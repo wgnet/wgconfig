@@ -1,0 +1,10 @@
+%% -*- mode: Erlang;-*-
+{application, wgconfig,
+ [
+  {description, ""},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [kernel, stdlib]},
+  {mod, {wgconfig_app, []}},
+  {env, []}
+ ]}.
