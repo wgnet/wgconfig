@@ -1,4 +1,4 @@
-ERL_RUN_ARGS:=+pc unicode -pa ebin -config wgconfig -boot start_sasl -s wgconfig_app start
+ERL_RUN_ARGS:=-pa ebin -boot start_sasl -s wgconfig_app start
 
 compile:
 	rebar compile skip_deps=true
@@ -22,9 +22,6 @@ eunit:
 
 run:
 	ERL_LIBS=deps erl $(ERL_RUN_ARGS)
-
-background:
-	ERL_LIBS=deps erl -detached $(ERL_RUN_ARGS)
 
 d:
 	dialyzer --src -I include src

@@ -2,8 +2,6 @@
 -behaviour(application).
 
 -export([start/0, start/2, stop/1]).
--include("logger.hrl").
-
 
 -spec(start() -> ok).
 start() ->
@@ -14,7 +12,6 @@ start() ->
 
 -spec(start(term(), term()) -> {ok, pid()}).
 start(_StartType, _StartArgs) ->
-    ?INFO("start some_app"),
     wgconfig_sup:start_link().
 
 

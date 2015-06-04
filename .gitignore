@@ -4,4 +4,4 @@ deps
 logs
 ebin
 TAGS
-.idea
+.rebar
