@@ -4,6 +4,8 @@
 -type(gs_state() :: term()).
 -type(gs_reason() :: term()).
 
+-type(gs_start_link_reply() :: {ok, pid()} | ignore | {error, term()}).
+
 -type(gs_init_reply() ::
     {ok, gs_state()} | {ok, gs_state(), timeout() | hibernate} |
     {stop, gs_reason()} | ignore).

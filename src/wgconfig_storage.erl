@@ -9,7 +9,7 @@
 
 %%% module API
 
--spec(start_link() -> gs_init_reply()).
+-spec start_link() -> gs_start_link_reply().
 start_link() ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
@@ -36,13 +36,13 @@ stop() ->
 
 %%% gen_server API
 
--spec(init(gs_args()) -> gs_init_reply()).
+-spec init(gs_args()) -> gs_init_reply().
 init([]) ->
-    T = ets:new(?MODULE, [named_table, set, protected]),
+    ets:new(?MODULE, [named_table, set, protected]),
     {ok, no_state}.
 
 
--spec(handle_call(gs_request(), gs_from(), gs_reply()) -> gs_call_reply()).
+-spec handle_call(gs_request(), gs_from(), gs_reply()) -> gs_call_reply().
 handle_call({add_sections, Sections}, _From, State) ->
     lists:foreach(fun add_section/1, lists:reverse(Sections)),
     {reply, ok, State};
@@ -51,7 +51,7 @@ handle_call(_Any, _From, State) ->
     {noreply, State}.
 
 
--spec(handle_cast(gs_request(), gs_state()) -> gs_cast_reply()).
+-spec handle_cast(gs_request(), gs_state()) -> gs_cast_reply().
 handle_cast(stop, State) ->
     {stop, normal, State};
 
@@ -59,17 +59,17 @@ handle_cast(_Any, State) ->
     {noreply, State}.
 
 
--spec(handle_info(gs_request(), gs_state()) -> gs_info_reply()).
+-spec handle_info(gs_request(), gs_state()) -> gs_info_reply().
 handle_info(_Any, State) ->
     {noreply, State}.
 
 
--spec(terminate(terminate_reason(), gs_state()) -> ok).
+-spec terminate(terminate_reason(), gs_state()) -> ok.
 terminate(_Reason, _State) ->
     ok.
 
 
--spec(code_change(term(), term(), term()) -> gs_code_change_reply()).
+-spec code_change(term(), term(), term()) -> gs_code_change_reply().
 code_change(_OldVersion, State, _Extra) ->
     {ok, State}.
 
