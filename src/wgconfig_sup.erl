@@ -20,9 +20,9 @@ init([]) ->
     Restart = permanent, % permanent | transient | temporary
     Shutdown = 2000,     % brutal_kill | int() >= 0 | infinity
 
-    SomeWorker = {some_worker,
-		  {some_worker, start_link, []},
-		  Restart, Shutdown, worker,
-		  [some_worker]},
+    Storage = {wgconfig_storage,
+               {wgconfig_storage, start_link, []},
+               Restart, Shutdown, worker,
+               [wgconfig_storage]},
 
-    {ok, {SupFlags, [SomeWorker]}}.
+    {ok, {SupFlags, [Storage]}}.

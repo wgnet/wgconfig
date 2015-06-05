@@ -80,7 +80,6 @@ code_change(_OldVersion, State, _Extra) ->
 
 -spec add_section(section()) -> ok.
 add_section({SectionName, KVs}) ->
-    io:format("add section ~p~n", [SectionName]),
     lists:foreach(fun({Key, Value}) ->
                           ets:insert(?MODULE, {{SectionName, Key}, Value})
                   end, lists:reverse(KVs)),

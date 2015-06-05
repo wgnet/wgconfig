@@ -2,11 +2,11 @@
 
 -include("wgconfig.hrl").
 
--export([parse_file/1, parse_bin/1]).
+-export([parse_file/1, parse_bin/1, trim/1]).
+-export([parse_line/2, parse_key_value/1]). % export for unit tests
 
-%% export for unit tests
--export([parse_line/2, parse_key_value/1, trim/1]).
 
+%% Module API
 
 -spec parse_file(file:name_all()) -> {ok, [section()]} | {error, atom()}.
 parse_file(FileName) ->
@@ -21,6 +21,15 @@ parse_bin(Bin) ->
     Lines = binary:split(Bin, [<<"\n">>, <<"\r">>], [global]),
     lists:foldl(fun parse_line/2, [], Lines).
 
+
+-spec trim(binary()) -> binary().
+trim(Bin) ->
+    Str = unicode:characters_to_list(Bin),
+    Str2 = string:strip(Str),
+    unicode:characters_to_binary(Str2).
+
+
+%% inner functions
 
 -spec parse_line(binary(), [section()]) -> [section()].
 parse_line(Line, Sections) ->
@@ -56,10 +65,3 @@ parse_key_value(Bin) ->
             end;
         _ -> skip
     end.
-
-
--spec trim(binary()) -> binary().
-trim(Bin) ->
-    Str = unicode:characters_to_list(Bin),
-    Str2 = string:strip(Str),
-    unicode:characters_to_binary(Str2).
