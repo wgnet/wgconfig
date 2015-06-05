@@ -1,11 +1,13 @@
 -module(wgconfig_storage).
 -behavior(gen_server).
 
--export([start_link/0, add_sections/1, get/2, stop/0]).
+-export([start_link/0, add_sections/1, list_sections/0, get/2, stop/0]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 -include("otp_types.hrl").
 -include("wgconfig.hrl").
+-include_lib("stdlib/include/ms_transform.hrl").
+
 
 %%% module API
 
@@ -18,6 +20,11 @@ start_link() ->
 add_sections(Sections) ->
     gen_server:call(?MODULE, {add_sections, Sections}),
     ok.
+
+
+-spec list_sections() -> [wgconfig_section_name()].
+list_sections() ->
+    gen_server:call(?MODULE, list_sections).
 
 
 -spec get(wgconfig_name(), wgconfig_name()) -> {ok, binary()} | {error, not_found}.
@@ -46,6 +53,13 @@ init([]) ->
 handle_call({add_sections, Sections}, _From, State) ->
     lists:foreach(fun add_section/1, lists:reverse(Sections)),
     {reply, ok, State};
+
+handle_call(list_sections, _From, State) ->
+    MS = ets:fun2ms(fun({{SectionName, _Key}, _Value}) ->
+                            SectionName
+                    end),
+    Names = sets:to_list(sets:from_list(ets:select(?MODULE, MS))),
+    {reply, Names, State};
 
 handle_call(_Any, _From, State) ->
     {noreply, State}.
