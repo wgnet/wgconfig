@@ -5,7 +5,6 @@
 
 -spec(start() -> ok).
 start() ->
-    lager:start(),
     application:start(wgconfig),
     ok.
 

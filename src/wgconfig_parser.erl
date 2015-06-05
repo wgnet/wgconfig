@@ -8,7 +8,7 @@
 
 %% Module API
 
--spec parse_file(file:name_all()) -> {ok, [section()]} | {error, atom()}.
+-spec parse_file(file:name_all()) -> {ok, [wgconfig_section()]} | {error, atom()}.
 parse_file(FileName) ->
     case file:read_file(FileName) of
         {ok, Bin} -> {ok, parse_bin(Bin)};
@@ -16,7 +16,7 @@ parse_file(FileName) ->
     end.
 
 
--spec parse_bin(binary()) -> [section()].
+-spec parse_bin(binary()) -> [wgconfig_section()].
 parse_bin(Bin) ->
     Lines = binary:split(Bin, [<<"\n">>, <<"\r">>], [global]),
     lists:foldl(fun parse_line/2, [], Lines).
@@ -31,7 +31,7 @@ trim(Bin) ->
 
 %% inner functions
 
--spec parse_line(binary(), [section()]) -> [section()].
+-spec parse_line(binary(), [wgconfig_section()]) -> [wgconfig_section()].
 parse_line(Line, Sections) ->
     case binary:split(Line, [<<"[">>]) of
         [Before, Rest] -> % line: [section name]
@@ -53,7 +53,7 @@ parse_line(Line, Sections) ->
     end.
 
 
--spec parse_key_value(binary()) -> key_value().
+-spec parse_key_value(binary()) -> wgconfig_key_value() | skip.
 parse_key_value(Bin) ->
     case binary:split(Bin, [<<"=">>]) of
         [Key, Rest] ->

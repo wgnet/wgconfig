@@ -14,7 +14,7 @@ start_link() ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 
--spec add_sections([section()]) -> ok.
+-spec add_sections([wgconfig_section()]) -> ok.
 add_sections(Sections) ->
     gen_server:call(?MODULE, {add_sections, Sections}),
     ok.
@@ -77,7 +77,7 @@ code_change(_OldVersion, State, _Extra) ->
 
 %%% inner functions
 
--spec add_section(section()) -> ok.
+-spec add_section(wgconfig_section()) -> ok.
 add_section({SectionName, KVs}) ->
     lists:foreach(fun({Key, Value}) ->
                           ets:insert(?MODULE, {{SectionName, Key}, Value})
