@@ -1,8 +1,8 @@
 %% -*- mode: Erlang;-*-
 {application, wgconfig,
  [
-  {description, ""},
-  {vsn, "1"},
+  {description, "wgconfig provides ini config files support"},
+  {vsn, "1.0"},
   {registered, []},
   {applications, [kernel, stdlib]},
   {mod, {wgconfig_app, []}},
