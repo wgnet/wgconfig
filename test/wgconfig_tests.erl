@@ -88,9 +88,102 @@ get_float_test() ->
     ok.
 
 
-%% get_bool_test() ->
-%%     application:start(wgconfig),
-%%     wgconfig:load_configs(["../test/my_config3.ini"]),
+get_string_test() ->
+    application:start(wgconfig),
+    wgconfig:load_configs(["../test/my_config3.ini"]),
 
-%%     application:stop(wgconfig),
-%%     ok.
+    ?assertEqual("true", wgconfig:get_string(<<"section 1">>, <<"key_1">>)),
+    ?assertEqual("false", wgconfig:get_string(<<"section 1">>, <<"key_2">>)),
+    ?assertEqual("hello", wgconfig:get_string(<<"section 1">>, <<"key_3">>)),
+    ?assertEqual("77", wgconfig:get_string(<<"section 1">>, <<"key_4">>)),
+    ?assertEqual("77.77", wgconfig:get_string(<<"section 1">>, <<"key_5">>)),
+
+    ?assertEqual("my string", wgconfig:get_string(<<"section 1">>, <<"key_0">>, "my string")),
+
+    ?assertThrow({wgconfig_error, value_not_found},
+                  wgconfig:get_string(<<"section 1">>, <<"key_0">>)),
+
+    application:stop(wgconfig),
+    ok.
+
+
+get_binary_test() ->
+    application:start(wgconfig),
+    wgconfig:load_configs(["../test/my_config3.ini"]),
+
+    ?assertEqual(<<"true">>, wgconfig:get_binary(<<"section 1">>, <<"key_1">>)),
+    ?assertEqual(<<"false">>, wgconfig:get_binary(<<"section 1">>, <<"key_2">>)),
+    ?assertEqual(<<"hello">>, wgconfig:get_binary(<<"section 1">>, <<"key_3">>)),
+    ?assertEqual(<<"77">>, wgconfig:get_binary(<<"section 1">>, <<"key_4">>)),
+    ?assertEqual(<<"77.77">>, wgconfig:get_binary(<<"section 1">>, <<"key_5">>)),
+
+    ?assertEqual(<<"my string">>, wgconfig:get_binary(<<"section 1">>, <<"key_0">>, <<"my string">>)),
+
+    ?assertThrow({wgconfig_error, value_not_found},
+                  wgconfig:get_binary(<<"section 1">>, <<"key_0">>)),
+
+    application:stop(wgconfig),
+    ok.
+
+
+get_string_list_test() ->
+    application:start(wgconfig),
+    wgconfig:load_configs(["../test/my_config3.ini"]),
+
+    ?assertEqual(["hello"], wgconfig:get_string_list(<<"section 1">>, <<"key_3">>)),
+    ?assertEqual(["one", "two", "three", "four"], wgconfig:get_string_list(<<"section 3">>, <<"key_1">>)),
+    ?assertEqual(["a", "b", "c", "d"], wgconfig:get_string_list(<<"section 3">>, <<"key_2">>)),
+    ?assertEqual(["a", "b", "c", "d"], wgconfig:get_string_list(<<"section 3">>, <<"key_3">>)),
+    ?assertEqual(["-100"], wgconfig:get_string_list(<<"section 3">>, <<"key_4">>)),
+    ?assertEqual(["bla bla", "bla bla bla", "tata ta ta"], wgconfig:get_string_list(<<"section 3">>, <<"key_8">>)),
+
+    ?assertEqual(["my", "string"], wgconfig:get_string_list(<<"section 1">>, <<"key_0">>, ["my", "string"])),
+
+    ?assertThrow({wgconfig_error, value_not_found},
+                  wgconfig:get_string_list(<<"section 1">>, <<"key_0">>)),
+
+    application:stop(wgconfig),
+    ok.
+
+
+get_binary_list_test() ->
+    application:start(wgconfig),
+    wgconfig:load_configs(["../test/my_config3.ini"]),
+
+    ?assertEqual([<<"hello">>], wgconfig:get_binary_list(<<"section 1">>, <<"key_3">>)),
+    ?assertEqual([<<"one">>, <<"two">>, <<"three">>, <<"four">>],
+                 wgconfig:get_binary_list(<<"section 3">>, <<"key_1">>)),
+    ?assertEqual([<<"a">>, <<"b">>, <<"c">>, <<"d">>],
+                 wgconfig:get_binary_list(<<"section 3">>, <<"key_2">>)),
+    ?assertEqual([<<"a">>, <<"b">>, <<"c">>, <<"d">>],
+                 wgconfig:get_binary_list(<<"section 3">>, <<"key_3">>)),
+    ?assertEqual([<<"-100">>], wgconfig:get_binary_list(<<"section 3">>, <<"key_4">>)),
+    ?assertEqual([<<"bla bla">>, <<"bla bla bla">>, <<"tata ta ta">>],
+                 wgconfig:get_binary_list(<<"section 3">>, <<"key_8">>)),
+
+    ?assertEqual([<<"my binary">>], wgconfig:get_binary_list(<<"section 1">>, <<"key_0">>, [<<"my binary">>])),
+
+    ?assertThrow({wgconfig_error, value_not_found},
+                  wgconfig:get_binary_list(<<"section 1">>, <<"key_0">>)),
+
+    application:stop(wgconfig),
+    ok.
+
+
+names_test() ->
+    application:start(wgconfig),
+    wgconfig:load_configs(["../test/my_config3.ini"]),
+
+    ?assertEqual({ok, <<"on">>}, wgconfig:get("section 2", key_3)),
+
+    ?assertEqual(true, wgconfig:get_bool("section 1", <<"key_1">>)),
+    ?assertEqual(false, wgconfig:get_bool(<<"section 1">>, "key_2")),
+
+    ?assertEqual(77, wgconfig:get_int('section 1', <<"key_4">>)),
+    ?assertEqual(0, wgconfig:get_int(<<"section 3">>, key_5)),
+
+    ?assertEqual([<<"one">>, <<"two">>, <<"three">>, <<"four">>],
+                 wgconfig:get_binary_list("section 3", key_1)),
+
+    application:stop(wgconfig),
+    ok.

@@ -20,9 +20,9 @@ add_sections(Sections) ->
     ok.
 
 
--spec get(binary(), binary()) -> {ok, binary()} | {error, not_found}.
+-spec get(wgconfig_name(), wgconfig_name()) -> {ok, binary()} | {error, not_found}.
 get(SectionName, Key) ->
-    case ets:lookup(?MODULE, {SectionName, Key}) of
+    case ets:lookup(?MODULE, {to_bin(SectionName), to_bin(Key)}) of
         [{_, Value}] -> {ok, Value};
         [] -> {error, not_found}
     end.
@@ -39,7 +39,6 @@ stop() ->
 -spec(init(gs_args()) -> gs_init_reply()).
 init([]) ->
     T = ets:new(?MODULE, [named_table, set, protected]),
-    io:format("init ~p~n", [T]),
     {ok, no_state}.
 
 
@@ -84,3 +83,12 @@ add_section({SectionName, KVs}) ->
                           ets:insert(?MODULE, {{SectionName, Key}, Value})
                   end, lists:reverse(KVs)),
     ok.
+
+
+-spec to_bin(wgconfig_name()) -> binary().
+to_bin(Name) when is_atom(Name) ->
+    unicode:characters_to_binary(atom_to_list(Name));
+to_bin(Name) when is_list(Name) ->
+    unicode:characters_to_binary(Name);
+to_bin(Name) when is_binary(Name) ->
+    Name.

@@ -1,6 +1,8 @@
 -module(wgconfig).
 -author('Yura Zhloba <yzh44yzh@gmail.com>').
 
+-include("wgconfig.hrl").
+
 -export([load_configs/1, load_config/1,
          get/2, get/3, get/4,
          get_bool/2, get_bool/3,
@@ -11,8 +13,6 @@
          get_string_list/2, get_string_list/3,
          get_binary_list/2, get_binary_list/3
         ]).
-
--type(name() :: binary() | string() | atom()).
 
 
 %%% module API
@@ -31,12 +31,12 @@ load_config(FileName) ->
     end.
 
 
--spec get(binary(), binary()) -> {ok, binary()} | {error, not_found}.
+-spec get(wgconfig_name(), wgconfig_name()) -> {ok, binary()} | {error, not_found}.
 get(SectionName, Key) ->
     wgconfig_storage:get(SectionName, Key).
 
 
--spec get(name(), name(), function()) -> term().
+-spec get(wgconfig_name(), wgconfig_name(), function()) -> term().
 get(SectionName, Key, Cast) ->
     case wgconfig_storage:get(SectionName, Key) of
         {ok, Value} -> Cast(Value);
@@ -44,7 +44,7 @@ get(SectionName, Key, Cast) ->
     end.
 
 
--spec get(name(), name(), term(), function()) -> term().
+-spec get(wgconfig_name(), wgconfig_name(), term(), function()) -> term().
 get(SectionName, Key, Default, Cast) ->
     case wgconfig_storage:get(SectionName, Key) of
         {ok, Value} -> Cast(Value);
@@ -52,17 +52,17 @@ get(SectionName, Key, Default, Cast) ->
     end.
 
 
--spec get_bool(name(), name()) -> true | false.
+-spec get_bool(wgconfig_name(), wgconfig_name()) -> true | false.
 get_bool(SectionName, Key) ->
     get(SectionName, Key, fun value_to_bool/1).
 
 
--spec get_bool(name(), name(), true | false) -> true | false.
+-spec get_bool(wgconfig_name(), wgconfig_name(), true | false) -> true | false.
 get_bool(SectionName, Key, Default) ->
     get(SectionName, Key, Default, fun value_to_bool/1).
 
 
--spec get_int(name(), name()) -> integer().
+-spec get_int(wgconfig_name(), wgconfig_name()) -> integer().
 get_int(SectionName, Key) ->
     get(SectionName, Key, fun value_to_int/1).
 
@@ -71,52 +71,52 @@ get_int(SectionName, Key, Default) ->
     get(SectionName, Key, Default, fun value_to_int/1).
 
 
--spec get_float(name(), name()) -> float().
+-spec get_float(wgconfig_name(), wgconfig_name()) -> float().
 get_float(SectionName, Key) ->
     get(SectionName, Key, fun value_to_float/1).
 
 
--spec get_float(name(), name(), float()) -> float().
+-spec get_float(wgconfig_name(), wgconfig_name(), float()) -> float().
 get_float(SectionName, Key, Default) ->
     get(SectionName, Key, Default, fun value_to_float/1).
 
 
--spec get_string(name(), name()) -> string().
+-spec get_string(wgconfig_name(), wgconfig_name()) -> string().
 get_string(SectionName, Key) ->
     get(SectionName, Key, fun unicode:characters_to_list/1).
 
 
--spec get_string(name(), name(), string()) -> string().
+-spec get_string(wgconfig_name(), wgconfig_name(), string()) -> string().
 get_string(SectionName, Key, Default) ->
     get(SectionName, Key, Default, fun unicode:characters_to_list/1).
 
 
--spec get_binary(name(), name()) -> binary().
+-spec get_binary(wgconfig_name(), wgconfig_name()) -> binary().
 get_binary(SectionName, Key) ->
     get(SectionName, Key, fun(B) -> B end).
 
 
--spec get_binary(name(), name(), binary()) -> binary().
+-spec get_binary(wgconfig_name(), wgconfig_name(), binary()) -> binary().
 get_binary(SectionName, Key, Default) ->
     get(SectionName, Key, Default, fun(B) -> B end).
 
 
--spec get_string_list(name(), name()) -> [binary()].
+-spec get_string_list(wgconfig_name(), wgconfig_name()) -> [binary()].
 get_string_list(SectionName, Key) ->
     get(SectionName, Key, fun value_to_string_list/1).
 
 
--spec get_string_list(name(), name(), [binary()]) -> [binary()].
+-spec get_string_list(wgconfig_name(), wgconfig_name(), [binary()]) -> [binary()].
 get_string_list(SectionName, Key, Default) ->
     get(SectionName, Key, Default, fun value_to_string_list/1).
 
 
--spec get_binary_list(name(), name()) -> [binary()].
+-spec get_binary_list(wgconfig_name(), wgconfig_name()) -> [binary()].
 get_binary_list(SectionName, Key) ->
     get(SectionName, Key, fun value_to_binary_list/1).
 
 
--spec get_binary_list(name(), name(), [binary()]) -> [binary()].
+-spec get_binary_list(wgconfig_name(), wgconfig_name(), [binary()]) -> [binary()].
 get_binary_list(SectionName, Key, Default) ->
     get(SectionName, Key, Default, fun value_to_binary_list/1).
 
@@ -156,7 +156,7 @@ value_to_string_list(Value) ->
                             Str = unicode:characters_to_list(Bin),
                             case string:strip(Str) of
                                 "" -> false;
-                                Str2 -> {ok, Str2}
+                                Str2 -> {true, Str2}
                             end
                     end, Values).
 

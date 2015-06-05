@@ -69,3 +69,30 @@ two_configs_test() ->
 
     wgconfig_storage:stop(),
     ok.
+
+
+names_test() ->
+    wgconfig_storage:start_link(),
+    {ok, S} = wgconfig_parser:parse_file("../test/my_config.ini"),
+    wgconfig_storage:add_sections(S),
+
+    ?assertEqual({ok, <<"localhost">>},
+                 wgconfig_storage:get(database, host)),
+
+    ?assertEqual({ok, <<"my_db">>},
+                 wgconfig_storage:get("database", "db_name")),
+
+    ?assertEqual({ok, <<"my_db">>},
+                 wgconfig_storage:get(<<"database">>, <<"db_name">>)),
+
+    ?assertEqual({ok, <<"1000">>},
+                 wgconfig_storage:get(http_client, "retry_time")),
+
+    ?assertEqual({error,not_found},
+                 wgconfig_storage:get("database", some_key)),
+
+    ?assertEqual({error,not_found},
+                 wgconfig_storage:get(some_section, port)),
+
+    wgconfig_storage:stop(),
+    ok.
