@@ -1,7 +1,7 @@
 -module(wgconfig_storage).
 -behavior(gen_server).
 
--export([start_link/0, add_sections/1, list_sections/0, get/2, stop/0]).
+-export([start_link/0, add_sections/1, list_sections/0, get/2, set/3, stop/0]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 -include("otp_types.hrl").
@@ -35,6 +35,12 @@ get(SectionName, Key) ->
     end.
 
 
+-spec set(wgconfig_name(), wgconfig_name(), binary()) -> ok.
+set(SectionName, Key, Value) ->
+    gen_server:call(?MODULE, {set, to_bin(SectionName), to_bin(Key), Value}),
+    ok.
+
+
 -spec stop() -> ok.
 stop() ->
     gen_server:cast(?MODULE, stop),
@@ -52,6 +58,10 @@ init([]) ->
 -spec handle_call(gs_request(), gs_from(), gs_reply()) -> gs_call_reply().
 handle_call({add_sections, Sections}, _From, State) ->
     lists:foreach(fun add_section/1, lists:reverse(Sections)),
+    {reply, ok, State};
+
+handle_call({set, SectionName, Key, Value}, _From, State) ->
+    ets:insert(?MODULE, {{SectionName, Key}, Value}),
     {reply, ok, State};
 
 handle_call(list_sections, _From, State) ->

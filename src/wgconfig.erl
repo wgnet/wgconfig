@@ -4,7 +4,7 @@
 -include("wgconfig.hrl").
 
 -export([load_configs/1, load_config/1,
-         get/2, get/3, get/4,
+         get/2, get/3, get/4, set/3,
          get_bool/2, get_bool/3,
          get_int/2, get_int/3,
          get_float/2, get_float/3,
@@ -50,6 +50,21 @@ get(SectionName, Key, Default, Cast) ->
         {ok, Value} -> Cast(Value);
         {error, not_found} -> Default
     end.
+
+
+-spec set(wgconfig_name(), wgconfig_name(), term()) -> ok.
+set(SectionName, Key, true) ->
+    set(SectionName, Key, <<"true">>);
+set(SectionName, Key, false) ->
+    set(SectionName, Key, <<"false">>);
+set(SectionName, Key, Value) when is_integer(Value) ->
+    set(SectionName, Key, integer_to_binary(Value));
+set(SectionName, Key, Value) when is_float(Value) ->
+    set(SectionName, Key, float_to_binary(Value));
+set(SectionName, Key, Value) when is_list(Value) ->
+    set(SectionName, Key, unicode:characters_to_binary(Value));
+set(SectionName, Key, Value) when is_binary(Value) ->
+    wgconfig_storage:set(SectionName, Key, Value).
 
 
 -spec get_bool(wgconfig_name(), wgconfig_name()) -> true | false.

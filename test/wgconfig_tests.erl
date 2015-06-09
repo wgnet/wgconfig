@@ -187,3 +187,32 @@ names_test() ->
 
     application:stop(wgconfig),
     ok.
+
+
+set_test() ->
+    application:start(wgconfig),
+    wgconfig:load_configs(["../test/my_config3.ini"]),
+
+    ?assertEqual(false, wgconfig:get_bool(<<"section 1">>, "key_2")),
+
+    wgconfig:set(<<"section 1">>, <<"key_2">>, true),
+    ?assertEqual({ok, <<"true">>}, wgconfig:get(<<"section 1">>, <<"key_2">>)),
+    ?assertEqual(true, wgconfig:get_bool(<<"section 1">>, <<"key_2">>)),
+
+    wgconfig:set(<<"section 1">>, <<"key_2">>, 100),
+    ?assertEqual({ok, <<"100">>}, wgconfig:get(<<"section 1">>, <<"key_2">>)),
+    ?assertEqual(100, wgconfig:get_int(<<"section 1">>, <<"key_2">>)),
+
+    wgconfig:set(<<"section 1">>, <<"key_2">>, 3.14159),
+    ?assertEqual(3.14159, wgconfig:get_float(<<"section 1">>, <<"key_2">>)),
+
+    wgconfig:set(<<"section 1">>, <<"key_2">>, "Hello"),
+    ?assertEqual({ok, <<"Hello">>}, wgconfig:get(<<"section 1">>, <<"key_2">>)),
+    ?assertEqual("Hello", wgconfig:get_string(<<"section 1">>, <<"key_2">>)),
+
+    wgconfig:set(<<"section 1">>, <<"key_2">>, <<"xxx">>),
+    ?assertEqual({ok, <<"xxx">>}, wgconfig:get(<<"section 1">>, <<"key_2">>)),
+    ?assertEqual(<<"xxx">>, wgconfig:get_binary(<<"section 1">>, <<"key_2">>)),
+
+    application:stop(wgconfig),
+    ok.
