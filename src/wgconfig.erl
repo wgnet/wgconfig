@@ -38,17 +38,27 @@ get(SectionName, Key) ->
 
 -spec get(wgconfig_name(), wgconfig_name(), function()) -> term().
 get(SectionName, Key, Cast) ->
-    case wgconfig_storage:get(SectionName, Key) of
-        {ok, Value} -> Cast(Value);
-        {error, not_found} -> throw({wgconfig_error, value_not_found})
+    try
+        case wgconfig_storage:get(SectionName, Key) of
+            {ok, Value} -> Cast(Value);
+            {error, not_found} -> throw({wgconfig_error, value_not_found})
+        end
+    catch
+        throw:{wgconfig_error, Error} ->
+            throw({wgconfig_error, Error, SectionName, Key})
     end.
 
 
 -spec get(wgconfig_name(), wgconfig_name(), term(), function()) -> term().
 get(SectionName, Key, Default, Cast) ->
-    case wgconfig_storage:get(SectionName, Key) of
-        {ok, Value} -> Cast(Value);
-        {error, not_found} -> Default
+    try
+        case wgconfig_storage:get(SectionName, Key) of
+            {ok, Value} -> Cast(Value);
+            {error, not_found} -> Default
+        end
+    catch
+        throw:{wgconfig_error, Error} ->
+            throw({wgconfig_error, Error, SectionName, Key})
     end.
 
 

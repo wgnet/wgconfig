@@ -39,9 +39,9 @@ get_bool_test() ->
     ?assertEqual(true, wgconfig:get_bool(<<"section 1">>, <<"key_0">>, true)),
     ?assertEqual(false, wgconfig:get_bool(<<"section 1">>, <<"key_0">>, false)),
 
-    ?assertThrow({wgconfig_error, <<"invalid bool 'hello'">>},
+    ?assertThrow({wgconfig_error, <<"invalid bool 'hello'">>, <<"section 1">>, <<"key_3">>},
                   wgconfig:get_bool(<<"section 1">>, <<"key_3">>)),
-    ?assertThrow({wgconfig_error, value_not_found},
+    ?assertThrow({wgconfig_error, value_not_found, <<"section 1">>, <<"key_0">>},
                   wgconfig:get_bool(<<"section 1">>, <<"key_0">>)),
 
     application:stop(wgconfig),
@@ -59,9 +59,9 @@ get_int_test() ->
     ?assertEqual(42, wgconfig:get_int(<<"section 1">>, <<"key_0">>, 42)),
     ?assertEqual(-999, wgconfig:get_int(<<"section 0">>, <<"key_1">>, -999)),
 
-    ?assertThrow({wgconfig_error, <<"invalid int 'hello'">>},
+    ?assertThrow({wgconfig_error, <<"invalid int 'hello'">>, <<"section 1">>, <<"key_3">>},
                   wgconfig:get_int(<<"section 1">>, <<"key_3">>)),
-    ?assertThrow({wgconfig_error, value_not_found},
+    ?assertThrow({wgconfig_error, value_not_found, <<"section 1">>, <<"key_0">>},
                   wgconfig:get_int(<<"section 1">>, <<"key_0">>)),
 
     application:stop(wgconfig),
@@ -79,9 +79,9 @@ get_float_test() ->
     ?assertEqual(42.0, wgconfig:get_float(<<"section 1">>, <<"key_0">>, 42.0)),
     ?assertEqual(0.123, wgconfig:get_float(<<"section 0">>, <<"key_1">>, 0.123)),
 
-    ?assertThrow({wgconfig_error, <<"invalid float 'a,b,c,d'">>},
+    ?assertThrow({wgconfig_error, <<"invalid float 'a,b,c,d'">>, <<"section 3">>, <<"key_2">>},
                   wgconfig:get_float(<<"section 3">>, <<"key_2">>)),
-    ?assertThrow({wgconfig_error, value_not_found},
+    ?assertThrow({wgconfig_error, value_not_found, <<"section 1">>, <<"key_0">>},
                   wgconfig:get_float(<<"section 1">>, <<"key_0">>)),
 
     application:stop(wgconfig),
@@ -100,7 +100,7 @@ get_string_test() ->
 
     ?assertEqual("my string", wgconfig:get_string(<<"section 1">>, <<"key_0">>, "my string")),
 
-    ?assertThrow({wgconfig_error, value_not_found},
+    ?assertThrow({wgconfig_error, value_not_found, <<"section 1">>, <<"key_0">>},
                   wgconfig:get_string(<<"section 1">>, <<"key_0">>)),
 
     application:stop(wgconfig),
@@ -119,7 +119,7 @@ get_binary_test() ->
 
     ?assertEqual(<<"my string">>, wgconfig:get_binary(<<"section 1">>, <<"key_0">>, <<"my string">>)),
 
-    ?assertThrow({wgconfig_error, value_not_found},
+    ?assertThrow({wgconfig_error, value_not_found, <<"section 1">>, <<"key_0">>},
                   wgconfig:get_binary(<<"section 1">>, <<"key_0">>)),
 
     application:stop(wgconfig),
@@ -139,7 +139,7 @@ get_string_list_test() ->
 
     ?assertEqual(["my", "string"], wgconfig:get_string_list(<<"section 1">>, <<"key_0">>, ["my", "string"])),
 
-    ?assertThrow({wgconfig_error, value_not_found},
+    ?assertThrow({wgconfig_error, value_not_found, <<"section 1">>, <<"key_0">>},
                   wgconfig:get_string_list(<<"section 1">>, <<"key_0">>)),
 
     application:stop(wgconfig),
@@ -163,7 +163,7 @@ get_binary_list_test() ->
 
     ?assertEqual([<<"my binary">>], wgconfig:get_binary_list(<<"section 1">>, <<"key_0">>, [<<"my binary">>])),
 
-    ?assertThrow({wgconfig_error, value_not_found},
+    ?assertThrow({wgconfig_error, value_not_found, <<"section 1">>, <<"key_0">>},
                   wgconfig:get_binary_list(<<"section 1">>, <<"key_0">>)),
 
     application:stop(wgconfig),
@@ -215,4 +215,29 @@ set_test() ->
     ?assertEqual(<<"xxx">>, wgconfig:get_binary(<<"section 1">>, <<"key_2">>)),
 
     application:stop(wgconfig),
+    ok.
+
+
+errors_test() ->
+    application:start(wgconfig),
+    wgconfig:load_config("../test/my_config.ini"),
+
+    ?assertThrow({wgconfig_error, value_not_found, "my_section", "my_key"},
+                 wgconfig:get_string("my_section", "my_key")),
+
+    ?assertThrow({wgconfig_error, value_not_found, database, replica},
+                 wgconfig:get_binary(database, replica)),
+
+    ?assertThrow({wgconfig_error, value_not_found, database, replica},
+                 wgconfig:get_binary(database, replica)),
+
+    ?assertThrow({wgconfig_error, <<"invalid bool 'my_db'">>, database, db_name},
+                 wgconfig:get_bool(database, db_name)),
+
+    ?assertThrow({wgconfig_error, <<"invalid int 'my_db'">>, database, db_name},
+                 wgconfig:get_int(database, db_name)),
+
+    ?assertThrow({wgconfig_error, <<"invalid float 'my_db'">>, database, db_name},
+                 wgconfig:get_float(database, db_name)),
+
     ok.
