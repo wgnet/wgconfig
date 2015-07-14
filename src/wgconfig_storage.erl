@@ -1,7 +1,7 @@
 -module(wgconfig_storage).
 -behavior(gen_server).
 
--export([start_link/0, add_sections/1, list_sections/0, get/2, set/3, stop/0]).
+-export([start_link/0, add_sections/1, list_sections/0, list_sections/1, get/2, set/3, stop/0]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 -include("otp_types.hrl").
@@ -27,6 +27,16 @@ list_sections() ->
     gen_server:call(?MODULE, list_sections).
 
 
+-spec list_sections(wgconfig_name()) -> [wgconfig_section_name()].
+list_sections(Prefix) ->
+    BinPrefix = to_bin(Prefix),
+    Size = byte_size(BinPrefix),
+    AllSections = gen_server:call(?MODULE, list_sections),
+    lists:filter(fun(<<Start:Size/binary, _Rest/binary>>) -> Start =:= BinPrefix;
+                    (_) -> false
+                 end, AllSections).
+
+
 -spec get(wgconfig_name(), wgconfig_name()) -> {ok, binary()} | {error, not_found}.
 get(SectionName, Key) ->
     case ets:lookup(?MODULE, {to_bin(SectionName), to_bin(Key)}) of
@@ -39,6 +49,8 @@ get(SectionName, Key) ->
 set(SectionName, Key, Value) ->
     gen_server:call(?MODULE, {set, to_bin(SectionName), to_bin(Key), Value}),
     ok.
+
+
 
 
 -spec stop() -> ok.

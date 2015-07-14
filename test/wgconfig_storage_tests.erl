@@ -117,3 +117,26 @@ set_test() ->
 
     wgconfig_storage:stop(),
     ok.
+
+
+list_sections_test() ->
+    wgconfig_storage:start_link(),
+    ?assertEqual([], wgconfig_storage:list_sections()),
+
+    {ok, S} = wgconfig_parser:parse_file("../test/my_config.ini"),
+    wgconfig_storage:add_sections(S),
+
+    L0 = [<<"database">>, <<"http_client">>,
+          <<"lager.crash">>, <<"lager.handlers.error">>, <<"lager.handlers.info">>, <<"lager.handlers.warning">>,
+          <<"workers_pool">>],
+    ?assertEqual(L0, lists:sort(wgconfig_storage:list_sections())),
+
+    L1 = [<<"lager.crash">>, <<"lager.handlers.error">>, <<"lager.handlers.info">>, <<"lager.handlers.warning">>],
+    ?assertEqual(L1, lists:sort(wgconfig_storage:list_sections(lager))),
+    ?assertEqual(L1, lists:sort(wgconfig_storage:list_sections("lager"))),
+    ?assertEqual(L1, lists:sort(wgconfig_storage:list_sections(<<"lager">>))),
+
+    L2 = [<<"lager.handlers.error">>, <<"lager.handlers.info">>, <<"lager.handlers.warning">>],
+    ?assertEqual(L2, lists:sort(wgconfig_storage:list_sections("lager.handlers"))),
+    ?assertEqual(L2, lists:sort(wgconfig_storage:list_sections(<<"lager.handlers">>))),
+    ok.

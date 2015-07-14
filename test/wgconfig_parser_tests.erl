@@ -83,7 +83,11 @@ parse_bin_test() ->
 
 
 parse_file_test() ->
-    Res = [{<<"http_client">>, [{<<"max_retries">>, <<"7">>},
+    Res = [{<<"lager.crash">>, [{<<"enabled">>, <<"true">>}]},
+           {<<"lager.handlers.warning">>, [{<<"enabled">>, <<"true">>}]},
+           {<<"lager.handlers.info">>, [{<<"enabled">>, <<"true">>}]},
+           {<<"lager.handlers.error">>, [{<<"enabled">>, <<"true">>}]},
+           {<<"http_client">>, [{<<"max_retries">>, <<"7">>},
                                 {<<"retry_time">>, <<"1000">>},
                                 {<<"http_timeout">>, <<"5000">>}]},
            {<<"workers_pool">>, [{<<"max_workers">>, <<"30">>},

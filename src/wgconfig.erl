@@ -5,6 +5,7 @@
 
 -export([load_configs/1, load_config/1,
          get/2, get/3, get/4, set/3,
+         list_sections/0, list_sections/1,
          get_bool/2, get_bool/3,
          get_int/2, get_int/3,
          get_float/2, get_float/3,
@@ -78,6 +79,16 @@ set(SectionName, Key, Value) when is_list(Value) ->
     set(SectionName, Key, unicode:characters_to_binary(Value));
 set(SectionName, Key, Value) when is_binary(Value) ->
     wgconfig_storage:set(SectionName, Key, Value).
+
+
+-spec list_sections() -> [wgconfig_section_name()].
+list_sections() ->
+    wgconfig_storage:list_sections().
+
+
+-spec list_sections(wgconfig_name()) -> [wgconfig_section_name()].
+list_sections(Prefix) ->
+    wgconfig_storage:list_sections(Prefix).
 
 
 -spec get_bool(wgconfig_name(), wgconfig_name()) -> true | false.
