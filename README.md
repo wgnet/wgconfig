@@ -36,7 +36,7 @@ wgconfig:get_binary(database, db_name), % <<"my_db">>
 wgconfig:get_binary(database, db_user), % <<"my_user">>
 ```
 
-See [Unit Tests](./tree/master/test) for more examples.
+See [Unit Tests](tree/master/test) for more examples.
 
 
 ## Reload config and process changes
