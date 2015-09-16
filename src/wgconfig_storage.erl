@@ -1,12 +1,20 @@
 -module(wgconfig_storage).
 -behavior(gen_server).
 
--export([start_link/0, add_sections/1, list_sections/0, list_sections/1, get/2, set/3, stop/0]).
+-export([start_link/0,
+         add_sections/1, list_sections/0, list_sections/1,
+         get/2, set/3,
+         save_config_files/1, get_config_files/0,
+         stop/0]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 -include("otp_types.hrl").
 -include("wgconfig.hrl").
 -include_lib("stdlib/include/ms_transform.hrl").
+
+-record(state, {
+          config_files = [] :: [file:name_all()]
+         }).
 
 
 %%% module API
@@ -51,6 +59,16 @@ set(SectionName, Key, Value) ->
     ok.
 
 
+-spec save_config_files([file:name_all()]) -> ok.
+save_config_files(Files) ->
+    gen_server:cast(?MODULE, {save_config_files, Files}),
+    ok.
+
+
+
+-spec get_config_files() -> [file:name_all()].
+get_config_files() ->
+    gen_server:call(?MODULE, get_config_files).
 
 
 -spec stop() -> ok.
@@ -64,7 +82,7 @@ stop() ->
 -spec init(gs_args()) -> gs_init_reply().
 init([]) ->
     ets:new(?MODULE, [named_table, set, protected]),
-    {ok, no_state}.
+    {ok, #state{}}.
 
 
 -spec handle_call(gs_request(), gs_from(), gs_reply()) -> gs_call_reply().
@@ -83,11 +101,17 @@ handle_call(list_sections, _From, State) ->
     Names = sets:to_list(sets:from_list(ets:select(?MODULE, MS))),
     {reply, Names, State};
 
+handle_call(get_config_files, _From, #state{config_files = Files} = State) ->
+    {reply, Files, State};
+
 handle_call(_Any, _From, State) ->
     {noreply, State}.
 
 
 -spec handle_cast(gs_request(), gs_state()) -> gs_cast_reply().
+handle_cast({save_config_files, Files}, State) ->
+    {noreply, State#state{config_files = Files}};
+
 handle_cast(stop, State) ->
     {stop, normal, State};
 

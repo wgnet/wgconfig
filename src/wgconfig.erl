@@ -4,6 +4,7 @@
 -include("wgconfig.hrl").
 
 -export([load_configs/1, load_config/1,
+         reload/0, subscribe/1,
          get/2, get/3, get/4, set/3,
          list_sections/0, list_sections/1,
          get_bool/2, get_bool/3,
@@ -19,8 +20,17 @@
 %%% module API
 
 -spec load_configs([file:name_all()]) -> [ok | {error, atom()}].
-load_configs(FileNames) ->
-    lists:map(fun load_config/1, FileNames).
+load_configs(ConfigFiles) ->
+    wgconfig_storage:save_config_files(ConfigFiles),
+    lists:map(fun load_config/1, ConfigFiles).
+
+
+-spec reload() -> [ok | {error, atom()}].
+reload() ->
+    ConfigFiles = wgconfig_storage:get_config_files(),
+    Res = lists:map(fun load_config/1, ConfigFiles),
+    gen_event:notify(wgconfig_event_manager, wgconfig_reload),
+    Res.
 
 
 -spec load_config(file:name_all()) -> ok | {error, atom()}.
@@ -30,6 +40,12 @@ load_config(FileName) ->
                           ok;
         {error, Reason} -> {error, Reason}
     end.
+
+
+-spec subscribe(module()) -> ok.
+subscribe(Module) ->
+    gen_event:add_handler(wgconfig_event_manager, Module, []),
+    ok.
 
 
 -spec get(wgconfig_name(), wgconfig_name()) -> {ok, binary()} | {error, not_found}.

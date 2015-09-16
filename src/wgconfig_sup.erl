@@ -12,6 +12,8 @@ start_link() ->
 
 -spec(init(gs_args()) -> sup_init_reply()).
 init([]) ->
+    gen_event:start_link({local, wgconfig_event_manager}),
+
     RestartStrategy = one_for_one, % one_for_one | one_for_all | rest_for_one
     MaxRestarts = 10,
     MaxSecondsBetweenRestarts = 60,
