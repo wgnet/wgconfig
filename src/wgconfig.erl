@@ -4,7 +4,7 @@
 -include("wgconfig.hrl").
 
 -export([load_configs/1, load_config/1,
-         reload/0, subscribe/1,
+         reload/0, subscribe/1, subscribe/2,
          get/2, get/3, get/4, set/3,
          list_sections/0, list_sections/1,
          get_bool/2, get_bool/3,
@@ -44,7 +44,12 @@ load_config(FileName) ->
 
 -spec subscribe(module()) -> ok.
 subscribe(Module) ->
-    gen_event:add_handler(wgconfig_event_manager, Module, []),
+    subscribe(Module, []).
+
+
+-spec subscribe(module(), list()) -> ok.
+subscribe(Module, Args) ->
+    gen_event:add_handler(wgconfig_event_manager, Module, Args),
     ok.
 
 
