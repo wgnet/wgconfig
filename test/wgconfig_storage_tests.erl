@@ -2,9 +2,15 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
+setup() ->
+    application:ensure_all_started(wgconfig),
+    file:set_cwd(code:lib_dir(wgconfig)),
+    ok.
+
+
 one_config_test() ->
-    wgconfig_storage:start_link(),
-    {ok, S} = wgconfig_parser:parse_file("../test/my_config.ini"),
+    setup(),
+    {ok, S} = wgconfig_parser:parse_file("./test/data/my_config.ini"),
     wgconfig_storage:add_sections(S),
 
     ?assertEqual({ok, <<"localhost">>},
@@ -30,8 +36,8 @@ one_config_test() ->
 
 
 two_configs_test() ->
-    wgconfig_storage:start_link(),
-    {ok, S1} = wgconfig_parser:parse_file("../test/my_config.ini"),
+    setup(),
+    {ok, S1} = wgconfig_parser:parse_file("./test/data/my_config.ini"),
     wgconfig_storage:add_sections(S1),
 
     ?assertEqual({ok, <<"my_db">>},
@@ -49,7 +55,7 @@ two_configs_test() ->
     ?assertEqual({error,not_found},
                  wgconfig_storage:get(<<"some_section">>, <<"port">>)),
 
-    {ok, S2} = wgconfig_parser:parse_file("../test/my_config2.ini"),
+    {ok, S2} = wgconfig_parser:parse_file("./test/data/my_config2.ini"),
     wgconfig_storage:add_sections(S2),
 
     ?assertEqual({ok, <<"test_db">>},
@@ -72,8 +78,8 @@ two_configs_test() ->
 
 
 names_test() ->
-    wgconfig_storage:start_link(),
-    {ok, S} = wgconfig_parser:parse_file("../test/my_config.ini"),
+    setup(),
+    {ok, S} = wgconfig_parser:parse_file("./test/data/my_config.ini"),
     wgconfig_storage:add_sections(S),
 
     ?assertEqual({ok, <<"localhost">>},
@@ -99,8 +105,8 @@ names_test() ->
 
 
 set_test() ->
-    wgconfig_storage:start_link(),
-    {ok, S} = wgconfig_parser:parse_file("../test/my_config.ini"),
+    setup(),
+    {ok, S} = wgconfig_parser:parse_file("./test/data/my_config.ini"),
     wgconfig_storage:add_sections(S),
 
     ?assertEqual({ok, <<"localhost">>}, wgconfig_storage:get(database, host)),
@@ -120,10 +126,10 @@ set_test() ->
 
 
 list_sections_test() ->
-    wgconfig_storage:start_link(),
+    setup(),
     ?assertEqual([], wgconfig_storage:list_sections()),
 
-    {ok, S} = wgconfig_parser:parse_file("../test/my_config.ini"),
+    {ok, S} = wgconfig_parser:parse_file("./test/data/my_config.ini"),
     wgconfig_storage:add_sections(S),
 
     L0 = [<<"database">>, <<"http_client">>,

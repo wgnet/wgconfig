@@ -96,6 +96,8 @@ parse_file_test() ->
                              {<<"db_name">>, <<"my_db">>},
                              {<<"port">>, <<"5432">>},
                              {<<"host">>, <<"localhost">>}]}],
-    ?assertEqual({ok, Res}, wgconfig_parser:parse_file("../test/my_config.ini")),
-    ?assertEqual({error, enoent}, wgconfig_parser:parse_file("../test/other_config.ini")),
+    application:ensure_all_started(wgconfig),
+    file:set_cwd(code:lib_dir(wgconfig)),
+    ?assertEqual({ok, Res}, wgconfig_parser:parse_file("./test/data/my_config.ini")),
+    ?assertEqual({error, enoent}, wgconfig_parser:parse_file("./test/data/other_config.ini")),
     ok.

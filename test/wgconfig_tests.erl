@@ -2,9 +2,15 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
+setup() ->
+    application:ensure_all_started(wgconfig),
+    file:set_cwd(code:lib_dir(wgconfig)),
+    ok.
+
 base_api_test() ->
-    application:start(wgconfig),
-    wgconfig:load_configs(["../test/my_config.ini", "../test/my_config2.ini"]),
+    setup(),
+    Res = wgconfig:load_configs(["./test/data/my_config.ini", "./test/data/my_config2.ini"]),
+    ?assertEqual([ok, ok], Res),
 
     ?assertEqual({ok, <<"test_db">>},
                  wgconfig:get(<<"database">>, <<"db_name">>)),
@@ -26,8 +32,8 @@ base_api_test() ->
 
 
 get_bool_test() ->
-    application:start(wgconfig),
-    wgconfig:load_configs(["../test/my_config3.ini"]),
+    setup(),
+    wgconfig:load_configs(["./test/data/my_config3.ini"]),
 
     ?assertEqual(true, wgconfig:get_bool(<<"section 1">>, <<"key_1">>)),
     ?assertEqual(false, wgconfig:get_bool(<<"section 1">>, <<"key_2">>)),
@@ -49,8 +55,8 @@ get_bool_test() ->
 
 
 get_int_test() ->
-    application:start(wgconfig),
-    wgconfig:load_configs(["../test/my_config3.ini"]),
+    setup(),
+    wgconfig:load_configs(["./test/data/my_config3.ini"]),
 
     ?assertEqual(77, wgconfig:get_int(<<"section 1">>, <<"key_4">>)),
     ?assertEqual(0, wgconfig:get_int(<<"section 3">>, <<"key_5">>)),
@@ -69,8 +75,8 @@ get_int_test() ->
 
 
 get_float_test() ->
-    application:start(wgconfig),
-    wgconfig:load_configs(["../test/my_config3.ini"]),
+    setup(),
+    wgconfig:load_configs(["./test/data/my_config3.ini"]),
 
     ?assertEqual(77.77, wgconfig:get_float(<<"section 1">>, <<"key_5">>)),
     ?assertEqual(3.14159265, wgconfig:get_float(<<"section 3">>, <<"key_6">>)),
@@ -89,8 +95,8 @@ get_float_test() ->
 
 
 get_string_test() ->
-    application:start(wgconfig),
-    wgconfig:load_configs(["../test/my_config3.ini"]),
+    setup(),
+    wgconfig:load_configs(["./test/data/my_config3.ini"]),
 
     ?assertEqual("true", wgconfig:get_string(<<"section 1">>, <<"key_1">>)),
     ?assertEqual("false", wgconfig:get_string(<<"section 1">>, <<"key_2">>)),
@@ -108,8 +114,8 @@ get_string_test() ->
 
 
 get_binary_test() ->
-    application:start(wgconfig),
-    wgconfig:load_configs(["../test/my_config3.ini"]),
+    setup(),
+    wgconfig:load_configs(["./test/data/my_config3.ini"]),
 
     ?assertEqual(<<"true">>, wgconfig:get_binary(<<"section 1">>, <<"key_1">>)),
     ?assertEqual(<<"false">>, wgconfig:get_binary(<<"section 1">>, <<"key_2">>)),
@@ -127,8 +133,8 @@ get_binary_test() ->
 
 
 get_string_list_test() ->
-    application:start(wgconfig),
-    wgconfig:load_configs(["../test/my_config3.ini"]),
+    setup(),
+    wgconfig:load_configs(["./test/data/my_config3.ini"]),
 
     ?assertEqual(["hello"], wgconfig:get_string_list(<<"section 1">>, <<"key_3">>)),
     ?assertEqual(["one", "two", "three", "four"], wgconfig:get_string_list(<<"section 3">>, <<"key_1">>)),
@@ -147,8 +153,8 @@ get_string_list_test() ->
 
 
 get_binary_list_test() ->
-    application:start(wgconfig),
-    wgconfig:load_configs(["../test/my_config3.ini"]),
+    setup(),
+    wgconfig:load_configs(["./test/data/my_config3.ini"]),
 
     ?assertEqual([<<"hello">>], wgconfig:get_binary_list(<<"section 1">>, <<"key_3">>)),
     ?assertEqual([<<"one">>, <<"two">>, <<"three">>, <<"four">>],
@@ -171,8 +177,8 @@ get_binary_list_test() ->
 
 
 names_test() ->
-    application:start(wgconfig),
-    wgconfig:load_configs(["../test/my_config3.ini"]),
+    setup(),
+    wgconfig:load_configs(["./test/data/my_config3.ini"]),
 
     ?assertEqual({ok, <<"on">>}, wgconfig:get("section 2", key_3)),
 
@@ -190,8 +196,8 @@ names_test() ->
 
 
 set_test() ->
-    application:start(wgconfig),
-    wgconfig:load_configs(["../test/my_config3.ini"]),
+    setup(),
+    wgconfig:load_configs(["./test/data/my_config3.ini"]),
 
     ?assertEqual(false, wgconfig:get_bool(<<"section 1">>, "key_2")),
 
@@ -219,8 +225,8 @@ set_test() ->
 
 
 errors_test() ->
-    application:start(wgconfig),
-    wgconfig:load_config("../test/my_config.ini"),
+    setup(),
+    wgconfig:load_config("./test/data/my_config.ini"),
 
     ?assertThrow({wgconfig_error, value_not_found, "my_section", "my_key"},
                  wgconfig:get_string("my_section", "my_key")),

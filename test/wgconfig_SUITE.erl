@@ -10,7 +10,7 @@
         ]).
 
 
--define(CONFIG_FILES, ["../../test/my_config.ini", "../../test/my_config2.ini"]).
+-define(CONFIG_FILES, ["./test/data/my_config.ini", "./test/data/my_config2.ini"]).
 
 
 all() ->
@@ -30,6 +30,7 @@ end_per_suite(Config) ->
 
 
 init_per_testcase(_, Config) ->
+    file:set_cwd(code:lib_dir(wgconfig)),
     Res = wgconfig:load_configs(?CONFIG_FILES),
     ct:pal("load_configs ~p res ~p", [?CONFIG_FILES, Res]),
     Config.

@@ -1,17 +1,13 @@
 compile:
-	rebar compile
+	rebar3 compile
 
 clean:
-	rebar clean
+	rebar3 clean
 	rm -f erl_crash.dump
 
 tests:
-	rebar compile skip_deps=true
-	rebar eunit skip_deps=true
-	rebar ct skip_deps=true
+	rebar3 eunit
+	rebar3 ct
 
 run:
-	erl -pa ebin -config sys -s wgconfig_app start
-
-d:
-	dialyzer --src -I include src
+	erl -pa _build/default/lib/*/ebin -config sys -s wgconfig_app start

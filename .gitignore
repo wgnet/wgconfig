@@ -1,7 +1,8 @@
 *.beam
 .eunit
-deps
-logs
 ebin
 TAGS
 .rebar
+rebar.lock
+_build
+erl_crash.dump
