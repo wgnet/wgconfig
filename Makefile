@@ -2,11 +2,13 @@ compile:
 	rebar3 compile
 
 clean:
-	rebar3 clean
-	rm -f erl_crash.dump
+	-rm -rf _build
+	-rm -f erl_crash.dump
 
-tests:
+eunit:
 	rebar3 eunit
+
+ct:
 	rebar3 ct
 
 run:

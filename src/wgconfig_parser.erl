@@ -8,7 +8,7 @@
 
 %% Module API
 
--spec parse_file(file:name_all()) -> {ok, [wgconfig_section()]} | {error, atom()}.
+-spec parse_file(file:name_all()) -> {ok, wgconfig()} | {error, atom()}.
 parse_file(FileName) ->
     case file:read_file(FileName) of
         {ok, Bin} -> {ok, parse_bin(Bin)};
@@ -16,10 +16,11 @@ parse_file(FileName) ->
     end.
 
 
--spec parse_bin(binary()) -> [wgconfig_section()].
+-spec parse_bin(binary()) -> wgconfig().
 parse_bin(Bin) ->
     Lines = binary:split(Bin, [<<"\n">>, <<"\r">>], [global]),
-    lists:foldl(fun parse_line/2, [], Lines).
+    {_, Config} = lists:foldl(fun parse_line/2, {<<"default">>, maps:new()}, Lines),
+    Config.
 
 
 -spec trim(binary()) -> binary().
@@ -31,29 +32,29 @@ trim(Bin) ->
 
 %% inner functions
 
--spec parse_line(binary(), [wgconfig_section()]) -> [wgconfig_section()].
-parse_line(Line, Sections) ->
+-spec parse_line(binary(), {wgconfig_section(), wgconfig()}) -> {wgconfig_section(), wgconfig()}.
+parse_line(Line, {CurrentSection, Config}) ->
     case binary:split(Line, [<<"[">>]) of
         [Before, Rest] -> % line: [section name]
             case trim(Before) of
-                <<"#", _/binary>> -> Sections; % skip commented section
-                _ -> NewName = hd(binary:split(Rest, [<<"]">>])),
-                     NewSection = {trim(NewName), []},
-                     [NewSection | Sections]
+                <<"#", _/binary>> -> {CurrentSection, Config}; % skip commented section
+                _ -> NewSection = trim(hd(binary:split(Rest, [<<"]">>]))),
+                     {NewSection, Config}
             end;
-        [KeyValue] when length(Sections) > 0 -> % line: key = value # comment
+        [KeyValue] -> % line: key = value # comment
             case parse_key_value(KeyValue) of
                 {Key, Value} ->
-                    [CurrSection | RestSections] = Sections,
-                    {Name, KVs} = CurrSection,
-                    [{Name, [{Key, Value} | KVs]} | RestSections];
-                skip -> Sections
+                    FullKey = {CurrentSection, Key},
+                    {CurrentSection, Config#{FullKey => Value}};
+                skip ->
+                    {CurrentSection, Config}
             end;
-        _ -> Sections % line: any other
+        _ -> % line: any other
+            {CurrentSection, Config}
     end.
 
 
--spec parse_key_value(binary()) -> wgconfig_key_value() | skip.
+-spec parse_key_value(binary()) -> binary() | skip.
 parse_key_value(Bin) ->
     case binary:split(Bin, [<<"=">>]) of
         [Key, Rest] ->

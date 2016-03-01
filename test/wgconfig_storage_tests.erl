@@ -10,8 +10,8 @@ setup() ->
 
 one_config_test() ->
     setup(),
-    {ok, S} = wgconfig_parser:parse_file("./test/data/my_config.ini"),
-    wgconfig_storage:add_sections(S),
+    {ok, Config} = wgconfig_parser:parse_file("./test/data/my_config.ini"),
+    wgconfig_storage:add_config(Config),
 
     ?assertEqual({ok, <<"localhost">>},
                  wgconfig_storage:get(<<"database">>, <<"host">>)),
@@ -37,8 +37,8 @@ one_config_test() ->
 
 two_configs_test() ->
     setup(),
-    {ok, S1} = wgconfig_parser:parse_file("./test/data/my_config.ini"),
-    wgconfig_storage:add_sections(S1),
+    {ok, C1} = wgconfig_parser:parse_file("./test/data/my_config.ini"),
+    wgconfig_storage:add_config(C1),
 
     ?assertEqual({ok, <<"my_db">>},
                  wgconfig_storage:get(<<"database">>, <<"db_name">>)),
@@ -55,8 +55,8 @@ two_configs_test() ->
     ?assertEqual({error,not_found},
                  wgconfig_storage:get(<<"some_section">>, <<"port">>)),
 
-    {ok, S2} = wgconfig_parser:parse_file("./test/data/my_config2.ini"),
-    wgconfig_storage:add_sections(S2),
+    {ok, C2} = wgconfig_parser:parse_file("./test/data/my_config2.ini"),
+    wgconfig_storage:add_config(C2),
 
     ?assertEqual({ok, <<"test_db">>},
                  wgconfig_storage:get(<<"database">>, <<"db_name">>)),
@@ -79,8 +79,8 @@ two_configs_test() ->
 
 names_test() ->
     setup(),
-    {ok, S} = wgconfig_parser:parse_file("./test/data/my_config.ini"),
-    wgconfig_storage:add_sections(S),
+    {ok, Config} = wgconfig_parser:parse_file("./test/data/my_config.ini"),
+    wgconfig_storage:add_config(Config),
 
     ?assertEqual({ok, <<"localhost">>},
                  wgconfig_storage:get(database, host)),
@@ -106,8 +106,8 @@ names_test() ->
 
 set_test() ->
     setup(),
-    {ok, S} = wgconfig_parser:parse_file("./test/data/my_config.ini"),
-    wgconfig_storage:add_sections(S),
+    {ok, Config} = wgconfig_parser:parse_file("./test/data/my_config.ini"),
+    wgconfig_storage:add_config(Config),
 
     ?assertEqual({ok, <<"localhost">>}, wgconfig_storage:get(database, host)),
     wgconfig_storage:set(database, host, <<"127.0.0.1">>),
@@ -130,7 +130,7 @@ list_sections_test() ->
     ?assertEqual([], wgconfig_storage:list_sections()),
 
     {ok, S} = wgconfig_parser:parse_file("./test/data/my_config.ini"),
-    wgconfig_storage:add_sections(S),
+    wgconfig_storage:add_config(S),
 
     L0 = [<<"database">>, <<"http_client">>,
           <<"lager.crash">>, <<"lager.handlers.error">>, <<"lager.handlers.info">>, <<"lager.handlers.warning">>,

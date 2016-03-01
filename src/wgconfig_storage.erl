@@ -2,7 +2,8 @@
 -behavior(gen_server).
 
 -export([start_link/0,
-         add_sections/1, list_sections/0, list_sections/1,
+         list_sections/0, list_sections/1,
+         add_config/1,
          get/2, set/3,
          save_config_files/1, get_config_files/0,
          stop/0]).
@@ -24,18 +25,12 @@ start_link() ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 
--spec add_sections([wgconfig_section()]) -> ok.
-add_sections(Sections) ->
-    gen_server:call(?MODULE, {add_sections, Sections}),
-    ok.
-
-
--spec list_sections() -> [wgconfig_section_name()].
+-spec list_sections() -> [binary()].
 list_sections() ->
     gen_server:call(?MODULE, list_sections).
 
 
--spec list_sections(wgconfig_name()) -> [wgconfig_section_name()].
+-spec list_sections(wgconfig_name()) -> [binary()].
 list_sections(Prefix) ->
     BinPrefix = to_bin(Prefix),
     Size = byte_size(BinPrefix),
@@ -43,6 +38,12 @@ list_sections(Prefix) ->
     lists:filter(fun(<<Start:Size/binary, _Rest/binary>>) -> Start =:= BinPrefix;
                     (_) -> false
                  end, AllSections).
+
+
+-spec add_config(wgconfig()) -> ok.
+add_config(Config) ->
+    gen_server:call(?MODULE, {add_config, Config}),
+    ok.
 
 
 -spec get(wgconfig_name(), wgconfig_name()) -> {ok, binary()} | {error, not_found}.
@@ -86,8 +87,11 @@ init([]) ->
 
 
 -spec handle_call(gs_request(), gs_from(), gs_reply()) -> gs_call_reply().
-handle_call({add_sections, Sections}, _From, State) ->
-    lists:foreach(fun add_section/1, lists:reverse(Sections)),
+handle_call({add_config, Config}, _From, State) ->
+    maps:map(fun({SectionName, Key}, Value) ->
+                     ets:insert(?MODULE, {{SectionName, Key}, Value}),
+                     Value
+             end, Config),
     {reply, ok, State};
 
 handle_call({set, SectionName, Key, Value}, _From, State) ->
@@ -136,14 +140,6 @@ code_change(_OldVersion, State, _Extra) ->
 
 
 %%% inner functions
-
--spec add_section(wgconfig_section()) -> ok.
-add_section({SectionName, KVs}) ->
-    lists:foreach(fun({Key, Value}) ->
-                          ets:insert(?MODULE, {{SectionName, Key}, Value})
-                  end, lists:reverse(KVs)),
-    ok.
-
 
 -spec to_bin(wgconfig_name()) -> binary().
 to_bin(Name) when is_atom(Name) ->

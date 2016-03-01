@@ -36,7 +36,7 @@ reload() ->
 -spec load_config(file:name_all()) -> ok | {error, atom()}.
 load_config(FileName) ->
     case wgconfig_parser:parse_file(FileName) of
-        {ok, Sections} -> wgconfig_storage:add_sections(Sections),
+        {ok, Config} -> wgconfig_storage:add_config(Config),
                           ok;
         {error, Reason} -> {error, Reason}
     end.
@@ -102,12 +102,12 @@ set(SectionName, Key, Value) when is_binary(Value) ->
     wgconfig_storage:set(SectionName, Key, Value).
 
 
--spec list_sections() -> [wgconfig_section_name()].
+-spec list_sections() -> [wgconfig_section()].
 list_sections() ->
     wgconfig_storage:list_sections().
 
 
--spec list_sections(wgconfig_name()) -> [wgconfig_section_name()].
+-spec list_sections(wgconfig_name()) -> [wgconfig_section()].
 list_sections(Prefix) ->
     wgconfig_storage:list_sections(Prefix).
 
