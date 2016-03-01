@@ -2,11 +2,11 @@
 
 -include("wgconfig.hrl").
 
--export([parse_file/1, parse_bin/1, trim/1]).
--export([parse_line/2, parse_key_value/1]). % export for unit tests
+-export([parse_file/1, parse_bin/1]).
+-export([trim/1, parse_line/2]). % export for unit tests
 
 
-%% Module API
+%%% Module API
 
 -spec parse_file(file:name_all()) -> {ok, wgconfig()} | {error, atom()}.
 parse_file(FileName) ->
@@ -19,7 +19,10 @@ parse_file(FileName) ->
 -spec parse_bin(binary()) -> wgconfig().
 parse_bin(Bin) ->
     Lines = binary:split(Bin, [<<"\n">>, <<"\r">>], [global]),
-    {_, Config} = lists:foldl(fun parse_line/2, {<<"default">>, maps:new()}, Lines),
+    REs = re_list(), % compile REs once outside foldl
+    {_, Config} = lists:foldl(fun(Line, Acc) -> match(REs, Line, Acc) end,
+                              {<<"default">>, maps:new()},
+                              Lines),
     Config.
 
 
@@ -29,40 +32,35 @@ trim(Bin) ->
     Str2 = string:strip(Str),
     unicode:characters_to_binary(Str2).
 
-
-%% inner functions
-
+%% exported for unit tests
 -spec parse_line(binary(), {wgconfig_section(), wgconfig()}) -> {wgconfig_section(), wgconfig()}.
 parse_line(Line, {CurrentSection, Config}) ->
-    case binary:split(Line, [<<"[">>]) of
-        [Before, Rest] -> % line: [section name]
-            case trim(Before) of
-                <<"#", _/binary>> -> {CurrentSection, Config}; % skip commented section
-                _ -> NewSection = trim(hd(binary:split(Rest, [<<"]">>]))),
-                     {NewSection, Config}
-            end;
-        [KeyValue] -> % line: key = value # comment
-            case parse_key_value(KeyValue) of
-                {Key, Value} ->
-                    FullKey = {CurrentSection, Key},
-                    {CurrentSection, Config#{FullKey => Value}};
-                skip ->
-                    {CurrentSection, Config}
-            end;
-        _ -> % line: any other
-            {CurrentSection, Config}
-    end.
+    match(re_list(), Line, {CurrentSection, Config}).
 
 
--spec parse_key_value(binary()) -> binary() | skip.
-parse_key_value(Bin) ->
-    case binary:split(Bin, [<<"=">>]) of
-        [Key, Rest] ->
-            Key2 = trim(Key),
-            case Key2 of
-                <<"#", _/binary>> -> skip; % skip commented key
-                _ -> Value = hd(binary:split(Rest, [<<"#">>])),
-                     {Key2, trim(Value)}
-            end;
-        _ -> skip
+%%% inner functions
+
+-spec re_list() -> [re:mp()].
+re_list() ->
+    lists:map(fun({ok, RE}) -> RE end,
+              [
+               re:compile(<<"^\s*\\[([^\\]]+)\\]">>)       % [section name]
+              ,re:compile(<<"^([^=#]+)=\s*\"([^\"]+)\"">>) % key = "value" # comment
+              ,re:compile(<<"^([^=#]+)=\s*'([^']+)'">>)    % key = 'value' # comment
+              ,re:compile(<<"^([^=#]+)=([^#]+)">>)         % key =  value  # comment
+              ]).
+
+
+match([], _Line, Res) -> Res;
+match([RE | Rest], Line, {CurrentSection, Config}) ->
+    case re:run(Line, RE) of
+        {match, [_, PosLen]} ->
+            NewSection = trim(binary:part(Line, PosLen)),
+            {NewSection, Config};
+        {match, [_, PosLen1, PosLen2]} ->
+            Key = trim(binary:part(Line, PosLen1)),
+            Value = trim(binary:part(Line, PosLen2)),
+            FullKey = {CurrentSection, Key},
+            {CurrentSection, Config#{FullKey => Value}};
+        nomatch -> match(Rest, Line, {CurrentSection, Config})
     end.

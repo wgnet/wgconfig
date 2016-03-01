@@ -14,17 +14,19 @@ start_link() ->
 init([]) ->
     gen_event:start_link({local, wgconfig_event_manager}),
 
-    RestartStrategy = one_for_one, % one_for_one | one_for_all | rest_for_one
-    MaxRestarts = 10,
-    MaxSecondsBetweenRestarts = 60,
-    SupFlags = {RestartStrategy, MaxRestarts, MaxSecondsBetweenRestarts},
+    SupFlags =
+        #{strategy => one_for_one, % one_for_one | one_for_all | rest_for_one
+          intensity => 10, % max restarts
+          period => 1000 % in period of time
+         },
 
-    Restart = permanent, % permanent | transient | temporary
-    Shutdown = 2000,     % brutal_kill | int() >= 0 | infinity
-
-    Storage = {wgconfig_storage,
-               {wgconfig_storage, start_link, []},
-               Restart, Shutdown, worker,
-               [wgconfig_storage]},
+    Storage =
+        #{id => wgconfig_storage,
+          start => {wgconfig_storage, start_link, []},
+          restart => permanent, % permanent | transient | temporary
+          shutdown => 2000, % milliseconds | brutal_kill | infinity
+          type => worker, % worker | supervisor
+          modules => [wgconfig_storage]
+         },
 
     {ok, {SupFlags, [Storage]}}.

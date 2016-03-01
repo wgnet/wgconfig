@@ -20,6 +20,17 @@ Create configuration files:
     max_retries = 7
 ```
 
+Hash symbol _#_ is used for comments. If you need string value which
+containing hash inside it, you should quote it with single or double
+quotes.
+
+```
+some_key = "string with # inside it" # comment
+other_key = 'another string with # inside it' # comment
+next_key = "string with single quote ' inside it"
+yet_another_key = 'string with double quote " inside it'
+```
+
 Start app and load config files:
 
 ```

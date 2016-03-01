@@ -18,18 +18,6 @@ trim_test() ->
     ok.
 
 
-parse_key_value_test() ->
-    ?assertEqual({<<"key">>, <<"value">>}, wgconfig_parser:parse_key_value(<<"key=value">>)),
-    ?assertEqual({<<"key">>, <<"value">>}, wgconfig_parser:parse_key_value(<<"key = value">>)),
-    ?assertEqual({<<"key">>, <<"value">>}, wgconfig_parser:parse_key_value(<<"key = value # comment">>)),
-    ?assertEqual({<<"some_key">>, <<"15">>}, wgconfig_parser:parse_key_value(<<" some_key = 15   # comment">>)),
-    ?assertEqual({<<"other_key">>, <<"77">>}, wgconfig_parser:parse_key_value(<<"  other_key = 77   #">>)),
-    ?assertEqual(skip, wgconfig_parser:parse_key_value(<<"#  other_key = 77">>)),
-    ?assertEqual(skip, wgconfig_parser:parse_key_value(<<"  #  other_key = 77">>)),
-    ?assertEqual(skip, wgconfig_parser:parse_key_value(<<" hello there">>)),
-    ok.
-
-
 parse_line_test() ->
     S0 = {<<"default">>, #{}},
     S1 = {<<"some_section">>, #{}},
@@ -73,6 +61,26 @@ parse_line_test() ->
     ?assertEqual(S5, wgconfig_parser:parse_line(<<" ">>, S5)),
     ?assertEqual(S6, wgconfig_parser:parse_line(<<" # [commented_section] ">>, S6)),
 
+    ok.
+
+
+parse_quoted_value_test() ->
+    S1 = {<<"some_section">>, #{}},
+    S2 = {<<"some_section">>, #{{<<"some_section">>, <<"key">>} => <<"ta#ta#ta">>}},
+    ?assertEqual(S2, wgconfig_parser:parse_line(<<" key = \"ta#ta#ta\"">>, S1)),
+    S3 = {<<"some_section">>, #{{<<"some_section">>, <<"key">>} => <<"tatata">>}},
+    ?assertEqual(S3, wgconfig_parser:parse_line(<<" key = \"tatata\" # comment">>, S1)),
+    S4 = {<<"some_section">>, #{{<<"some_section">>, <<"key">>} => <<"#not#a#comment#">>}},
+    ?assertEqual(S4, wgconfig_parser:parse_line(<<" key = \"#not#a#comment#\" # comment">>, S1)),
+
+    ?assertEqual(S2, wgconfig_parser:parse_line(<<" key = 'ta#ta#ta'">>, S1)),
+    ?assertEqual(S3, wgconfig_parser:parse_line(<<" key = 'tatata' # comment">>, S1)),
+    ?assertEqual(S4, wgconfig_parser:parse_line(<<" key = '#not#a#comment#' # comment">>, S1)),
+
+    S5 = {<<"some_section">>, #{{<<"some_section">>, <<"key">>} => <<"ta\"ta">>}},
+    ?assertEqual(S5, wgconfig_parser:parse_line(<<" key = 'ta\"ta' # comment">>, S1)),
+    S6 = {<<"some_section">>, #{{<<"some_section">>, <<"key">>} => <<"ta'ta">>}},
+    ?assertEqual(S6, wgconfig_parser:parse_line(<<" key = \"ta'ta\" # comment">>, S1)),
     ok.
 
 
