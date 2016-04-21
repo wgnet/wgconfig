@@ -12,8 +12,6 @@ start_link() ->
 
 -spec(init(gs_args()) -> sup_init_reply()).
 init([]) ->
-    gen_event:start_link({local, wgconfig_event_manager}),
-
     SupFlags =
         #{strategy => one_for_one, % one_for_one | one_for_all | rest_for_one
           intensity => 10, % max restarts
@@ -28,5 +26,11 @@ init([]) ->
           type => worker, % worker | supervisor
           modules => [wgconfig_storage]
          },
-
-    {ok, {SupFlags, [Storage]}}.
+    Event =
+        #{id => wgconfig_event_manager,
+          start => {gen_event, start_link, [{local, wgconfig_event_manager}]},
+          restart => permanent,
+          shutdown => 2000,
+          type => worker,
+          modules => [gen_event]},
+    {ok, {SupFlags, [Storage, Event]}}.
