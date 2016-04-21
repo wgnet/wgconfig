@@ -2,7 +2,7 @@
 -behavior(gen_server).
 
 -export([start_link/0,
-         list_sections/0, list_sections/1,
+         list_sections/0, list_sections/1, list_keys/1,
          add_config/1,
          get/2, set/3,
          save_config_files/1, get_config_files/0,
@@ -38,6 +38,11 @@ list_sections(Prefix) ->
     lists:filter(fun(<<Start:Size/binary, _Rest/binary>>) -> Start =:= BinPrefix;
                     (_) -> false
                  end, AllSections).
+
+-spec list_keys(wgconfig_name()) -> [binary()].
+list_keys(Section) ->
+    BinSection = to_bin(Section),
+    gen_server:call(?MODULE, {list_keys, BinSection}).
 
 
 -spec add_config(wgconfig()) -> ok.
@@ -104,6 +109,11 @@ handle_call(list_sections, _From, State) ->
                     end),
     Names = sets:to_list(sets:from_list(ets:select(?MODULE, MS))),
     {reply, Names, State};
+
+handle_call({list_keys, Section}, _From, State) ->
+    MS = ets:fun2ms(fun({{TabSection, Key}, _}) when TabSection == Section -> Key end),
+    Keys = ets:select(?MODULE, MS),
+    {reply, Keys, State};
 
 handle_call(get_config_files, _From, #state{config_files = Files} = State) ->
     {reply, Files, State};

@@ -146,3 +146,17 @@ list_sections_test() ->
     ?assertEqual(L2, lists:sort(wgconfig_storage:list_sections("lager.handlers"))),
     ?assertEqual(L2, lists:sort(wgconfig_storage:list_sections(<<"lager.handlers">>))),
     ok.
+
+list_keys_test() ->
+    application:stop(wgconfig),                 %cleanup storage
+    setup(),
+    ?assertEqual([], wgconfig_storage:list_keys(wasd)),
+    ?assertEqual([], wgconfig_storage:list_keys(database)),
+
+    {ok, S} = wgconfig_parser:parse_file("./test/data/my_config.ini"),
+    wgconfig_storage:add_config(S),
+
+    ?assertEqual([], wgconfig_storage:list_keys(wasd)),
+    ?assertEqual([<<"db_name">>, <<"db_user">>, <<"host">>, <<"port">>],
+                 lists:sort(wgconfig_storage:list_keys(database))),
+    ok.
