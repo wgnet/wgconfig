@@ -5,12 +5,11 @@
 -include("otp_types.hrl").
 
 
--spec(start_link() -> {ok, pid()}).
+-spec start_link() -> {ok, pid()}.
 start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 
--spec(init(gs_args()) -> sup_init_reply()).
 init([]) ->
     SupFlags =
         #{strategy => one_for_one, % one_for_one | one_for_all | rest_for_one

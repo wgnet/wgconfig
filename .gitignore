@@ -1,8 +1,4 @@
-*.beam
-.eunit
-ebin
-TAGS
-.rebar
-rebar.lock
+.idea
+wgconfig.iml
 _build
 erl_crash.dump

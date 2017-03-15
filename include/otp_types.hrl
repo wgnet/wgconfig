@@ -39,6 +39,4 @@
 
 
 -type(sup_init_reply() ::
-        {ok, {{supervisor:strategy(), non_neg_integer(), non_neg_integer()},
-              [supervisor:child_spec()]}}
-      | ignore).
+        {ok, map()} | ignore).
