@@ -12,8 +12,10 @@
          get_float/2, get_float/3,
          get_string/2, get_string/3,
          get_binary/2, get_binary/3,
+         get_atom/2, get_atom/3,
          get_string_list/2, get_string_list/3,
-         get_binary_list/2, get_binary_list/3
+         get_binary_list/2, get_binary_list/3,
+         get_atom_list/2, get_atom_list/3
         ]).
 
 
@@ -163,6 +165,13 @@ get_binary(SectionName, Key) ->
 get_binary(SectionName, Key, Default) ->
     get(SectionName, Key, Default, fun(B) -> B end).
 
+-spec get_atom(wgconfig_name(), wgconfig_name()) -> atom().
+get_atom(SectionName, Key) ->
+    get(SectionName, Key, fun(B) -> erlang:binary_to_atom(B, utf8) end).
+
+-spec get_atom(wgconfig_name(), wgconfig_name(), atom()) -> atom().
+get_atom(SectionName, Key, Default) ->
+    get(SectionName, Key, Default, fun(B) -> erlang:binary_to_atom(B, utf8) end).
 
 -spec get_string_list(wgconfig_name(), wgconfig_name()) -> [binary()].
 get_string_list(SectionName, Key) ->
@@ -178,11 +187,17 @@ get_string_list(SectionName, Key, Default) ->
 get_binary_list(SectionName, Key) ->
     get(SectionName, Key, fun value_to_binary_list/1).
 
-
 -spec get_binary_list(wgconfig_name(), wgconfig_name(), [binary()]) -> [binary()].
 get_binary_list(SectionName, Key, Default) ->
     get(SectionName, Key, Default, fun value_to_binary_list/1).
 
+-spec get_atom_list(wgconfig_name(), wgconfig_name()) -> [atom()].
+get_atom_list(SectionName, Key) ->
+    get(SectionName, Key, fun value_to_atom_list/1).
+
+-spec get_atom_list(wgconfig_name(), wgconfig_name(), [atom()]) -> [atom()].
+get_atom_list(SectionName, Key, Default) ->
+    get(SectionName, Key, Default, fun value_to_atom_list/1).
 
 %% inner functions
 
@@ -231,3 +246,8 @@ value_to_binary_list(Value) ->
     lists:filter(fun(<<>>) -> false;
                     (_) -> true
                  end, Values2).
+
+-spec value_to_atom_list(binary()) -> [atom()].
+value_to_atom_list(Value) ->
+    Values = binary:split(Value, [<<",">>], [global]),
+    lists:map(fun (B) -> erlang:binary_to_atom(B) end, Values).
