@@ -53,9 +53,13 @@ add_config(Config) ->
 
 -spec get(wgconfig_name(), wgconfig_name()) -> {ok, binary()} | {error, not_found}.
 get(SectionName, Key) ->
-    case ets:lookup(?MODULE, {to_bin(SectionName), to_bin(Key)}) of
-        [{_, Value}] -> {ok, Value};
-        [] -> {error, not_found}
+    case persistent_term:get({?MODULE, to_bin(SectionName), to_bin(Key)},
+                             {error, not_found}) of
+        {error, not_found} ->
+            {error, not_found};
+
+        Value ->
+            {ok, Value}
     end.
 
 
@@ -87,32 +91,60 @@ stop() ->
 
 -spec init(gs_args()) -> gs_init_reply().
 init([]) ->
-    ets:new(?MODULE, [named_table, set, protected]),
     {ok, #state{}}.
 
 
 -spec handle_call(gs_request(), gs_from(), gs_reply()) -> gs_call_reply().
 handle_call({add_config, Config}, _From, State) ->
     maps:map(fun({SectionName, Key}, Value) ->
-                     ets:insert(?MODULE, {{SectionName, Key}, Value}),
-                     Value
+                    persistent_term:put({?MODULE, SectionName, Key}, Value),
+                    Value
              end, Config),
     {reply, ok, State};
 
 handle_call({set, SectionName, Key, Value}, _From, State) ->
-    ets:insert(?MODULE, {{SectionName, Key}, Value}),
+    persistent_term:put({?MODULE, SectionName, Key}, Value),
     {reply, ok, State};
 
 handle_call(list_sections, _From, State) ->
-    MS = ets:fun2ms(fun({{SectionName, _Key}, _Value}) ->
-                            SectionName
-                    end),
-    Names = sets:to_list(sets:from_list(ets:select(?MODULE, MS))),
+    {CompositeKeys, _Values} = lists:unzip(persistent_term:get()),
+
+    SectionNames = lists:filtermap(
+        fun
+            ({?MODULE, SectionName, _Key}) ->
+                {true, SectionName};
+
+            (_) ->
+                false
+        end,
+        CompositeKeys
+    ),
+
+    Names = sets:to_list(sets:from_list(SectionNames)),
     {reply, Names, State};
 
 handle_call({list_keys, Section}, _From, State) ->
-    MS = ets:fun2ms(fun({{TabSection, Key}, _}) when TabSection == Section -> Key end),
-    Keys = ets:select(?MODULE, MS),
+    {CompositeKeys, _Values} = lists:unzip(persistent_term:get()),
+
+    ExtractKeys = fun
+        ({?MODULE, SectionName, Key}) ->
+            case SectionName of
+                Section ->
+                    {true, Key};
+
+                _ ->
+                    false
+            end;
+
+        (_) ->
+            false
+    end,
+
+    Keys = lists:filtermap(
+        ExtractKeys,
+        CompositeKeys
+    ),
+
     {reply, Keys, State};
 
 handle_call(get_config_files, _From, #state{config_files = Files} = State) ->
