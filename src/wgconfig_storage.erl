@@ -81,8 +81,27 @@ get_config_files() ->
     gen_server:call(?MODULE, get_config_files).
 
 
+-spec clear_persistent_term() -> ok.
+clear_persistent_term() ->
+    {CompositeKeys, _Values} = lists:unzip(persistent_term:get()),
+
+    lists:foreach(
+        fun
+            ({?MODULE, SectionName, Key}) ->
+                persistent_term:erase({?MODULE, SectionName, Key});
+
+            (_) ->
+                nothing
+        end,
+        CompositeKeys
+    ),
+
+    ok.
+
+
 -spec stop() -> ok.
 stop() ->
+    clear_persistent_term(),
     gen_server:cast(?MODULE, stop),
     ok.
 
