@@ -31,7 +31,7 @@ one_config_test() ->
     ?assertEqual({error,not_found},
                  wgconfig_storage:get(<<"some_section">>, <<"port">>)),
 
-    wgconfig_storage:stop(),
+    wgconfig_storage:stop(), %cleanup storage
     ok.
 
 
@@ -73,7 +73,7 @@ two_configs_test() ->
     ?assertEqual({error,not_found},
                  wgconfig_storage:get(<<"some_section">>, <<"port">>)),
 
-    wgconfig_storage:stop(),
+    wgconfig_storage:stop(), %cleanup storage
     ok.
 
 
@@ -100,7 +100,7 @@ names_test() ->
     ?assertEqual({error,not_found},
                  wgconfig_storage:get(some_section, port)),
 
-    wgconfig_storage:stop(),
+    wgconfig_storage:stop(), %cleanup storage
     ok.
 
 
@@ -121,7 +121,7 @@ set_test() ->
     wgconfig_storage:set(<<"http_client">>, <<"retry_time">>, <<"5000">>),
     ?assertEqual({ok, <<"5000">>}, wgconfig_storage:get(http_client, "retry_time")),
 
-    wgconfig_storage:stop(),
+    wgconfig_storage:stop(), %cleanup storage
     ok.
 
 
@@ -148,7 +148,8 @@ list_sections_test() ->
     ok.
 
 list_keys_test() ->
-    application:stop(wgconfig),                 %cleanup storage
+    wgconfig_storage:stop(), %cleanup storage
+    application:stop(wgconfig),
     setup(),
     ?assertEqual([], wgconfig_storage:list_keys(wasd)),
     ?assertEqual([], wgconfig_storage:list_keys(database)),
