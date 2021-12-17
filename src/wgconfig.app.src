@@ -2,7 +2,7 @@
 {application, wgconfig,
  [
   {description, "wgconfig provides ini config files support"},
-  {vsn, "1.6.0"},
+  {vsn, git},
   {registered, []},
   {applications, [kernel, stdlib]},
   {mod, {wgconfig_app, []}},

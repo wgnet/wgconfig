@@ -1,3 +1,7 @@
+# wgconfig
+[![Build Status][gh badge]][gh]
+[![Erlang Versions][erlang version badge]][gh]
+
 **wgconfig** provides ini config files support.
 
 Create configuration files:
@@ -90,3 +94,8 @@ handle_event(wgconfig_reload, State) ->
     %% process this event
     {ok, State}.
 ```
+
+<!-- Badges -->
+[gh]: https://github.com/wgnet/wgconfig/actions/workflows/ci.yml
+[gh badge]: https://img.shields.io/github/workflow/status/wgnet/wgconfig/CI?style=flat-square
+[erlang version badge]: https://img.shields.io/badge/erlang-21.3%20to%2024.2-blue.svg?style=flat-square

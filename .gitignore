@@ -2,3 +2,5 @@
 wgconfig.iml
 _build
 erl_crash.dump
+doc
+rebar3

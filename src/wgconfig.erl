@@ -167,16 +167,15 @@ get_binary(SectionName, Key, Default) ->
 
 -spec get_atom(wgconfig_name(), wgconfig_name()) -> atom().
 get_atom(SectionName, Key) ->
-    get(SectionName, Key, fun(B) -> erlang:binary_to_atom(B, utf8) end).
+    get(SectionName, Key, fun value_to_atom/1).
 
 -spec get_atom(wgconfig_name(), wgconfig_name(), atom()) -> atom().
 get_atom(SectionName, Key, Default) ->
-    get(SectionName, Key, Default, fun(B) -> erlang:binary_to_atom(B, utf8) end).
+    get(SectionName, Key, Default, fun value_to_atom/1).
 
 -spec get_string_list(wgconfig_name(), wgconfig_name()) -> [binary()].
 get_string_list(SectionName, Key) ->
     get(SectionName, Key, fun value_to_string_list/1).
-
 
 -spec get_string_list(wgconfig_name(), wgconfig_name(), [binary()]) -> [binary()].
 get_string_list(SectionName, Key, Default) ->
@@ -250,4 +249,8 @@ value_to_binary_list(Value) ->
 -spec value_to_atom_list(binary()) -> [atom()].
 value_to_atom_list(Value) ->
     Values = binary:split(Value, [<<",">>], [global]),
-    lists:map(fun (B) -> erlang:binary_to_atom(B) end, Values).
+    lists:map(fun value_to_atom/1, Values).
+
+-spec value_to_atom(binary()) -> atom() | no_return().
+value_to_atom(Data) ->
+    list_to_atom(binary_to_list(Data)).
