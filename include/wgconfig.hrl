@@ -4,4 +4,5 @@
 -type(wgconfig_key() :: binary()).
 -type(wgconfig_value() :: binary()).
 
--type(wgconfig() :: #{{wgconfig_section(), wgconfig_key()} => wgconfig_value()}).
+-type(parsed_ini_config() :: #{{wgconfig_section(), wgconfig_key()} => wgconfig_value()}).
+-type(wgconfig() :: #{wgconfig_section() => #{wgconfig_key() => wgconfig_value()}}).

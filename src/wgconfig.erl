@@ -5,6 +5,7 @@
 
 -export([load_configs/1, load_config/1,
          reload/0, subscribe/1, subscribe/2,
+         get_all/0,
          get/2, get/3, get/4, set/3,
          list_sections/0, list_sections/1, list_keys/1,
          get_bool/2, get_bool/3,
@@ -102,6 +103,30 @@ set(SectionName, Key, Value) when is_list(Value) ->
     set(SectionName, Key, unicode:characters_to_binary(Value));
 set(SectionName, Key, Value) when is_binary(Value) ->
     wgconfig_storage:set(SectionName, Key, Value).
+
+
+%%------------------------------------------------------------------------------
+%% @doc get_all
+%% Get human readable representation of whole config
+%% @end
+%%------------------------------------------------------------------------------
+-spec get_all() -> wgconfig().
+get_all() ->
+    lists:foldl(
+        fun(SectionName, Config) ->
+            ConfigSection = lists:foldl(
+                fun(ConfigKeyName, ConfigSection) ->
+                    Value = wgconfig:get_binary(SectionName, ConfigKeyName),
+                    maps:merge(ConfigSection, #{ConfigKeyName => Value})
+                end,
+                #{},
+                wgconfig:list_keys(SectionName)
+            ),
+            maps:merge(Config, #{SectionName => ConfigSection})
+        end,
+        maps:new(),
+        wgconfig:list_sections()
+    ).
 
 
 -spec list_sections() -> [wgconfig_section()].
