@@ -45,7 +45,7 @@ list_keys(Section) ->
     gen_server:call(?MODULE, {list_keys, BinSection}).
 
 
--spec add_config(wgconfig()) -> ok.
+-spec add_config(parsed_ini_config()) -> ok.
 add_config(Config) ->
     gen_server:call(?MODULE, {add_config, Config}),
     ok.

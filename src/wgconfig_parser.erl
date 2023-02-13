@@ -8,7 +8,7 @@
 
 %%% Module API
 
--spec parse_file(file:name_all()) -> {ok, wgconfig()} | {error, atom()}.
+-spec parse_file(file:name_all()) -> {ok, parsed_ini_config()} | {error, atom()}.
 parse_file(FileName) ->
     case file:read_file(FileName) of
         {ok, Bin} -> {ok, parse_bin(Bin)};
@@ -16,7 +16,7 @@ parse_file(FileName) ->
     end.
 
 
--spec parse_bin(binary()) -> wgconfig().
+-spec parse_bin(binary()) -> parsed_ini_config().
 parse_bin(Bin) ->
     Lines = binary:split(Bin, [<<"\n">>, <<"\r">>], [global]),
     REs = re_list(), % compile REs once outside foldl
@@ -33,7 +33,7 @@ trim(Bin) ->
     unicode:characters_to_binary(Str2).
 
 %% exported for unit tests
--spec parse_line(binary(), {wgconfig_section(), wgconfig()}) -> {wgconfig_section(), wgconfig()}.
+-spec parse_line(binary(), {wgconfig_section(), parsed_ini_config()}) -> {wgconfig_section(), parsed_ini_config()}.
 parse_line(Line, {CurrentSection, Config}) ->
     match(re_list(), Line, {CurrentSection, Config}).
 

@@ -4,6 +4,7 @@
   {description, "wgconfig provides ini config files support"},
   {vsn, git},
   {registered, []},
+  {licenses, ["MIT"]},
   {applications, [kernel, stdlib]},
   {mod, {wgconfig_app, []}},
   {env, []}
