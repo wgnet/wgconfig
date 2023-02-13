@@ -12,10 +12,11 @@ on:
 jobs:
   ubuntu:
     name: "Ubuntu"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
-        otp: [21.3, 22.3, 23.3, 24.2]
+        otp: ['23.3', '24.2', '25.2']
+        rebar: ['3.20.0']
     steps:
     - uses: actions/checkout@v2
     - uses: erlef/setup-beam@v1
@@ -23,16 +24,14 @@ jobs:
         otp-version: ${{matrix.otp}}
         rebar3-version: ${{matrix.rebar}}
     - name: Tests
-      run: |
-           make rebar3
-           ./rebar3 test
+      run: make test
   windows:
     name: "Windows"
     runs-on: windows-latest
     strategy:
       matrix:
-        otp: [24.2]
-        rebar: [3.17.0]
+        otp: ['23.3', '24.2', '25.2']
+        rebar: ['3.20.0']
     steps:
     - uses: actions/checkout@v2
     - uses: erlef/setup-beam@v1
@@ -40,4 +39,4 @@ jobs:
         otp-version: ${{matrix.otp}}
         rebar3-version: ${{matrix.rebar}}
     - name: Tests
-      run: rebar3 test
+      run: make test

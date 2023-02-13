@@ -1,11 +1,11 @@
-REBARVER = 3.15.2
-ifeq ($(OTPVER),24.0)
-	REBARVER = 3.17.0
-endif
-
+.PHONY: test
 
 compile:
 	rebar3 compile
+
+test:
+	rebar3 test
+	rebar3 dialyzer
 
 
 eunit:
@@ -20,7 +20,7 @@ console:
 	erl -pa _build/default/lib/*/ebin -config sys -s wgconfig_app start
 
 
-d:
+dialyzer:
 	rebar3 dialyzer
 
 
@@ -28,8 +28,3 @@ clean-all:
 	-rm -rf _build
 	-rm -f erl_crash.dump
 	-rm -f rebar.lock
-
-
-rebar3:
-	wget https://github.com/erlang/rebar3/releases/download/${REBARVER}/rebar3 &&\
-	chmod u+x rebar3
